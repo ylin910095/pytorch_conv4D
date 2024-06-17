@@ -152,7 +152,9 @@ class Conv4d_groups(nn.Module):
         self.dtype = dtype
         self.device = device
 
-        self.bias = nn.Parameter(torch.randn(out_channels)) if bias else self.register_parameter('bias', None)
+        self.bias = (nn.Parameter(torch.randn(out_channels)) if bias
+                                 else self.register_parameter('bias', None))
+
         if bias_initializer is not None:
             bias_initializer(self.bias)
 
@@ -164,12 +166,17 @@ class Conv4d_groups(nn.Module):
                                 padding_mode=self.padding_mode,
                                 groups=self.kernel_size[0],
                                 dtype=self.dtype, device=self.device)
+        # Weights and biases intialization
+        self.reset_parameters()
+
         if channels_last:
             channels_last = [torch.channels_last, torch.channels_last_3d][Nd-3]
             self.conv.to(memory_format=channels_last)
 
+        """
         if kernel_initializer is not None:
             kernel_initializer(self.conv.weight)
+        """
 
     def do_padding(self, input):
         (b, c_i) = tuple(input.shape[0:2])
@@ -223,3 +230,13 @@ class Conv4d_groups(nn.Module):
         result = result[:, :, :size_o[0], ]
 
         return result
+
+    def reset_parameters(self):
+        """Copied from pytorch github"""
+        n = self.in_channels
+        for k in self.kernel_size:
+            n *= k
+        stdv = 1. / math.sqrt(n)
+        self.conv.weight.data.uniform_(-stdv, stdv)
+        if self.bias is not None:
+            self.bias.data.uniform_(-stdv, stdv)
