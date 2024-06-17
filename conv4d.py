@@ -143,7 +143,8 @@ class Conv4d_groups(nn.Module):
         if not isinstance(padding, tuple):
             padding = tuple(padding for _ in range(Nd))
         self.conv_f = (nn.Conv1d, nn.Conv2d, nn.Conv3d)[Nd - 2]
-
+       
+        self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
         self.padding = padding

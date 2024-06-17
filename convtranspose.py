@@ -69,7 +69,7 @@ class ConvTransposeNd_groups(nn.Module):
                               device=self.weight.device, dtype=self.weight.dtype)
 
         op = lambda x, y, groups: self.convtranspose_f(
-                    x, y, bias=False, stride=self.stride, padding=0,
+                    x, y, bias=None, stride=self.stride, padding=0,
                     output_padding=0, groups=groups, dilation=1)
 
         # The order of repeat and reshape are important here
@@ -120,7 +120,7 @@ class ConvTransposeNd_groups(nn.Module):
         for k in self.kernel_size:
             n *= k
         stdv = 1. / math.sqrt(n)
-        self.convtranspose_f.weight.data.uniform_(-stdv, stdv)
+        self.weight.data.uniform_(-stdv, stdv)
         if self.bias is not None:
             self.bias.data.uniform_(-stdv, stdv)
         self.weight.data.uniform_(-stdv, stdv)
